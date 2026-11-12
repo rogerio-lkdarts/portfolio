@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROGÉRIO LKD Arts | Shader Portfolio</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/courier-new" rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              terminal: ['Courier New', 'Courier', 'monospace']
+            },
+            colors: {
+              background: 'var(--background)',
+              card: 'var(--card-bg)',
+              text: 'var(--text)',
+              'text-secondary': 'var(--text-secondary)',
+              accent: 'var(--accent)',
+              border: 'var(--border)',
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
+
+      :root {
+        --background: #050505;
+        --card-bg: #111111;
+        --text: #e6e6e6;
+        --text-secondary: #a0a0a0;
+        --border: rgba(255, 255, 255, 0.1);
+        --accent: #39ff14;
+        --cube-size: min(400px, 80vw);
+        --translate-z: calc(var(--cube-size) / 2);
+      }
+
+      /* Reset & Base */
+      * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+      body { background-color: var(--background); color: var(--text); overflow-x: hidden; position: relative; font-family: 'Inter', sans-serif; }
+
+      /* IU */
+      .badge { box-shadow: 0 10px 20px rgba(0,0,0,0.2); backdrop-filter: blur(5px); }  
+      .text-outline { -webkit-text-stroke: 1px var(--text-secondary); color: transparent; }
+      .modal-open { overflow: hidden; }
+
+      /* Hero Blob Text */
+      .blob-wrapper svg { width: 100%; height: auto; aspect-ratio: 1/1; overflow: visible; }
+      #blobClip { transform-origin: center; transition: ease-out transform 0.4s; }
+      .blob-wrapper svg:hover #blobClip { transform: scale(1.15); }
+      .blob-wrapper svg:hover .text-content { fill: var(--accent); }
+      .text-content { font: 700 5.8px/1.2 'Inter', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; fill: #ffffff; transition: ease fill 0.5s; }
+
+      .scroll-indicator { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; animation: bounce 2s infinite; opacity: 0.8; z-index: 10; font-weight: 700;}
+      .scroll-indicator svg { width: 24px; height: 24px; margin-top: 5px; fill: currentColor; }
+      @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); } 40% { transform: translate(-50%, -15px); } 60% { transform: translate(-50%, -7px); } }
+
+      /* Skill Bars */
+      .skill-bar { transition: width 1.5s ease-out; }  
+      .liquid-bar { background: linear-gradient(90deg, var(--accent) 0%, #ffffff 50%, var(--accent) 100%); background-size: 200% 100%; animation: liquidFlow 2s linear infinite; box-shadow: 0 0 15px var(--accent); position: relative; }  
+      .liquid-bar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent); border-radius: inherit; }
+
+      /* Filters */
+      .sphere-filter { transition: all 0.3s ease; }  
+      .sphere-filter.active { background-color: var(--accent); color: var(--background); border-color: var(--accent); }
+
+      /* Scrollbar Principal */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }  
+      ::-webkit-scrollbar-track { background: var(--background); }  
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; border: 2px solid var(--background); transition: background 0.3s ease; }  
+      ::-webkit-scrollbar-thumb:hover { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+      /* Botões de Acesso (Terminal) Otimizados */
+      .terminal-btn {
+        position: relative; z-index: 10; padding: 0.5rem 1.5rem; border: 1px solid var(--accent); color: var(--accent);
+        font-family: monospace; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em;
+        transition: all 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0); transform: scale(1); background: transparent;
+      }
+      .terminal-btn:hover {
+        background-color: var(--accent); color: var(--background); box-shadow: 0 0 20px var(--accent); transform: scale(1.05);
+      }
+
+      /* Terminal Styles */
+      .tr-container { font-family: "Courier New", Courier, monospace; background-color: #000; color: var(--accent); width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }  
+      .tr-terminal { background-color: #000; border: 1px solid var(--accent); border-radius: 5px; width: 100%; height: 100%; padding: 20px; color: var(--accent); font-size: 14px; overflow-y: auto; }  
+      .tr-header { border-bottom: 1px solid var(--accent); padding-bottom: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; }  
+      .tr-cursor { display: inline-block; width: 8px; height: 16px; background-color: var(--accent); animation: tr-blink 1s infinite; vertical-align: middle; }  
+      .tr-terminal a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed var(--accent); transition: 0.3s ease; }  
+      .tr-terminal a:hover { background-color: #222; border-bottom: 1px solid var(--accent); }  
+      .tr-terminal span[data-action]:hover { cursor: pointer; background-color: rgba(0, 255, 0, 0.2); }
+
+      /* Advanced Terminal 2 Styles */
+      .scanlines { background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; }
+      .animate-blink { animation: blinkAnim 0.8s step-end infinite; }
+      @keyframes blinkAnim { 50% { opacity: 0; } }
+      
+      /* Scrollbar Específico dos Terminais (Remove o conflito) */
+      .tr-terminal::-webkit-scrollbar, #liveConsole::-webkit-scrollbar { width: 4px; }
+      .tr-terminal::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 0; border: none; box-shadow: none; }
+      #liveConsole::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 0; border: none; box-shadow: none; }
+
+      /* Badges do Loop Infinito */
+      .mask-fade-edges {
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+      }
+      .animate-loop-scroll {
+        animation: loop-scroll 25s linear infinite;
+      }
+      .animate-loop-scroll:hover {
+        animation-play-state: paused;
+      }
+      @keyframes loop-scroll {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(calc(-50% - 0.5rem));
+        }
+      }
+
+      /* 3D Cube Styles */
+      .btn-cube-nav { border-color: var(--accent); color: var(--text); }  
+      .btn-cube-nav:hover { background-color: var(--accent); color: var(--background); box-shadow: 0 0 15px var(--accent); }  
+      .cube-container { width: var(--cube-size); height: var(--cube-size); perspective: 1500px; margin: 0 auto; }  
+      .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1); }  
+      .cube-face { position: absolute; width: var(--cube-size); height: var(--cube-size); backface-visibility: hidden; border: 2px solid var(--accent); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }  
+
+      .face-front  { transform: rotateY(0deg) translateZ(var(--translate-z)); }  
+      .face-right  { transform: rotateY(90deg) translateZ(var(--translate-z)); }  
+      .face-back   { transform: rotateY(180deg) translateZ(var(--translate-z)); }  
+      .face-left   { transform: rotateY(-90deg) translateZ(var(--translate-z)); }  
+      .face-top    { transform: rotateX(90deg) translateZ(var(--translate-z)); }  
+      .face-bottom { transform: rotateX(-90deg) translateZ(var(--translate-z)); }
+
+      .show-front  { transform: translateZ(calc(var(--translate-z) * -1)) rotateY(0deg); }  
+      .show-right  { transform: translateZ(calc(var(--translate-z) * -1)) rotateY(-90deg); }  
+      .show-back   { transform: translateZ(calc(var(--translate-z) * -1)) rotateY(-180deg); }  
+      .show-left   { transform: translateZ(calc(var(--translate-z) * -1)) rotateY(90deg); }  
+      .show-top    { transform: translateZ(calc(var(--translate-z) * -1)) rotateX(-90deg); }  
+      .show-bottom { transform: translateZ(calc(var(--translate-z) * -1)) rotateX(90deg); }
+
+      #canvas-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+      
+      .gs-hero-text h2::after { content: '|'; color: var(--accent); animation: tr-blink 1s infinite; margin-left: 5px; vertical-align: baseline; }
+
+      @keyframes liquidFlow { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }  
+      @keyframes tr-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }  
+      @media (min-width: 768px) { .tr-terminal { font-size: 16px; } }
+    </style>
+</head>
+<body class="bg-background text-text transition-colors duration-300 overflow-x-hidden antialiased">
+
+    <!-- Canvas para fundo -->
+    <div id="canvas-container"></div>
+
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 z-40 w-full max-w-[95vw]">
+      <div class="bg-black/60 border border-white/10 p-2 sm:p-2.5 rounded-2xl sm:rounded-full shadow-2xl flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 backdrop-blur-xl">
+        
+        <!-- Idioma -->
+        <div class="relative flex items-center">
+          <select id="language-select" aria-label="Selecionar idioma" class="appearance-none bg-transparent text-text font-bold text-[11px] cursor-pointer focus:outline-none p-2 sm:p-4 uppercase tracking-tighter hover:text-accent transition-colors">
+            <option value="en" class="bg-card text-text">1. EN</option>
+            <option value="pt" class="bg-card text-text">2. PT</option>
+            <option value="es" class="bg-card text-text">3. ES</option>
+          </select>
+          <svg class="w-2 h-2 absolute right-0 pointer-events-none opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+
+        <div class="hidden sm:block w-px h-5 bg-border/50"></div>
+
+        <!-- Cores -->
+        <div class="flex flex-wrap grid grid-cols-5 sm:flex gap-2 px-1 items-center justify-center" id="color-select">
+          <button data-color="#EF4444" class="accent-btn w-5 h-5 rounded-full bg-[#EF4444] hover:scale-125 transition-transform"></button>
+          <button data-color="#F97316" class="accent-btn w-5 h-5 rounded-full bg-[#F97316] hover:scale-125 transition-transform"></button>
+          <button data-color="#FFD900" class="accent-btn w-5 h-5 rounded-full bg-[#FFD900] hover:scale-125 transition-transform"></button>
+          <button data-color="#39ff14" class="accent-btn w-5 h-5 rounded-full bg-[#39ff14] hover:scale-125 transition-transform"></button>
+          <button data-color="#06D6A0" class="accent-btn w-5 h-5 rounded-full bg-[#06D6A0] hover:scale-125 transition-transform"></button>
+          <button data-color="#4cc9f0" class="accent-btn w-5 h-5 rounded-full bg-[#4cc9f0] hover:scale-125 transition-transform"></button>
+          <button data-color="#3B82F6" class="accent-btn w-5 h-5 rounded-full bg-[#3B82F6] hover:scale-125 transition-transform"></button>
+          <button data-color="#8B5CF6" class="accent-btn w-5 h-5 rounded-full bg-[#8B5CF6] hover:scale-125 transition-transform"></button>
+          <button data-color="#D900FF" class="accent-btn w-5 h-5 rounded-full bg-[#D900FF] hover:scale-125 transition-transform"></button>
+          <button data-color="#a3a3a3" class="accent-btn w-5 h-5 rounded-full bg-[#a3a3a3] hover:scale-125 transition-transform"></button>
+        </div>
+
+        <div class="hidden sm:block w-px h-5 bg-border/50"></div>
+        
+        <!-- Music Toggle -->
+        <button id="music-toggle" class="text-text-secondary hover:text-accent transition-colors flex items-center justify-center w-8 h-8 rounded-full border border-transparent hover:border-accent" aria-label="Play/Pause Music">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+
+        <!-- Scroll to Top -->
+        <button id="scroll-to-top" class="text-accent transition-colors flex items-center justify-center w-8 h-8 rounded-full border border-accent" aria-label="Scroll to top">
+           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header (Starts Hidden) -->
+    <header id="main-header" class="fixed top-0 left-0 w-full flex justify-between items-center p-6 md:p-10 z-50 bg-background/80 backdrop-blur-md border-b border-white/10 transition-all duration-300 -translate-y-full opacity-0 pointer-events-none">
+      <div class="flex items-center gap-3 text-text">
+        <div class="w-10 h-10 rounded-lg bg-text flex items-center justify-center text-background hover:bg-accent transition-colors duration-300">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"></path></svg>
+        </div>
+        <div class="flex flex-col font-bold leading-tight">
+          <span class="tracking-widest">ROGÉRIO</span>
+          <span class="text-xs text-text-secondary">LKD Arts</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:block">
+        <ul class="flex gap-6 lg:gap-8 font-medium text-sm">
+          <li><a href="#about" data-i18n="nav_about" class="hover:text-accent transition-colors">About</a></li>
+          <li><a href="#services" data-i18n="nav_serv" class="hover:text-accent transition-colors">Services</a></li>
+          <li><a href="#quali" data-i18n="nav_quali" class="hover:text-accent transition-colors">Qualification</a></li>
+          <li><a href="#skills" data-i18n="nav_skills" class="hover:text-accent transition-colors">Skills</a></li>
+          <li><a href="#work" data-i18n="nav_work" class="hover:text-accent transition-colors">Works</a></li>
+          <li><a href="#contact" data-i18n="nav_contact" class="hover:text-accent transition-colors">Contact</a></li>
+        </ul>
+      </nav>
+
+      <button class="mobile-menu-toggle md:hidden flex flex-col justify-between w-8 h-6 z-50 transition-all duration-300 group cursor-pointer">
+        <span class="w-full h-0.5 bg-text transition-all duration-300 origin-center"></span>
+        <span class="w-full h-0.5 bg-text transition-all duration-300 opacity-100"></span>
+        <span class="w-full h-0.5 bg-text transition-all duration-300 origin-center"></span>
+      </button>
+    </header>
+
+    <div class="mobile-menu fixed inset-0 bg-black/60 backdrop-blur-md z-40 transform translate-x-full transition-transform duration-300 flex items-center justify-center">
+      <ul class="flex flex-col gap-6 text-2xl font-bold text-center">
+        <li><a href="#about" class="mobile-link hover:text-accent transition-colors" data-i18n="nav_about">About</a></li>
+        <li><a href="#services" class="mobile-link hover:text-accent transition-colors" data-i18n="nav_serv">Services</a></li>
+        <li><a href="#quali" class="mobile-link hover:text-accent transition-colors" data-i18n="nav_quali">Qualification</a></li>
+        <li><a href="#skills" class="mobile-link hover:text-accent transition-colors" data-i18n="nav_skills">Skills</a></li>
+        <li><a href="#work" class="mobile-link hover:text-accent transition-colors" data-i18n="nav_work">Works</a></li>
+        <li><a href="#contact" class="mobile-link hover:text-accent transition-colors" data-i18n="nav_contact">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <main class="mt-0">
+      
+      <!-- Hero -->
+      <section class="min-h-[100vh] flex flex-col justify-center px-6 relative overflow-hidden md:px-20 gs-hero-section">
+        <div class="mx-auto w-full relative z-10 grid md:grid-cols-2 gap-10 items-center">
+          <div class="order-2 md:order-1 flex flex-col justify-center gs-hero-text">
+            <h1 class="text-5xl md:text-8xl font-extrabold uppercase leading-[0.9] mb-2 flex justify-center tracking-tighter text-center bg-clip-text bg-gradient-to-r from-accent via-white to-gray-500 drop-shadow-sm" data-i18n="hero_role">
+              Software<br>Developer
+            </h1>
+            <h2 class="text-xl flex justify-center mt-4 text-center">I build digital experiences.</h2>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+              <a href="#work" class="bg-black/60 backdrop-blur-md group flex items-center gap-2 px-6 py-3 text-sm sm:text-lg font-semibold text-white hover:text-accent transition-colors border border-transparent hover:border-accent rounded-full">
+                <span data-i18n="work_title">View Works</span>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+              </a>
+              <a href="#contact" class="bg-black/60 backdrop-blur-md group flex items-center gap-2 px-6 py-3 text-sm sm:text-lg font-semibold text-white hover:text-accent transition-colors border border-transparent hover:border-accent rounded-full">
+                <span data-i18n="contact_title">Get in Touch</span>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="relative flex items-center justify-center md:order-2 profile-wrapper gs-hero-img">
+            <div class="flex-1 w-full max-w-md flex justify-center items-center blob-wrapper relative z-10 opacity-0 profile-image">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-2xl">
+                    <image href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7tetRlQiLd5hTwBQDpCt9xZD_wOKWxmsvrfb8R6Ml3ZqnpFkv78Fn0zlVcJm_webP90B8tajMmwdjrb_m-S6vCnjoVnQSaUtxlokKRBo6UpKuftVk_FZrYSVCS0h0Brjh8Xn9aoSDk5_-HfywZVCvmDG3KJxKmUGPzMsQqCaHcp3I5g/s1600/awsfasfagr.png2.png" width="200" height="200" preserveAspectRatio="xMidYMid slice" clip-path="url(#blobClip)"></image>
+                    <clipPath id="blobClip">
+                        <path d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)"></path>
+                    </clipPath>
+                    <path id="textPath" d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)" fill="none" stroke="none" pathLength="100"></path>
+                    <text class="text-content">
+                        <textPath href="#textPath" startOffset="0%" data-i18n="hero_role2">❤ FULLSTACK ❤ BACKEND ❤ UX DESIGN ❤ AI ❤ OBSERVABILITY ❤ DOCUMENTATION ❤ METHODOLOGIES ❤ FRONTEND ❤ QA
+                            <animate attributeName="startOffset" from="0%" to="100%" dur="15s" repeatCount="indefinite"></animate>
+                        </textPath>
+                        <textPath href="#textPath" startOffset="100%" data-i18n="hero_role2">❤ FULLSTACK ❤ BACKEND ❤ UX DESIGN ❤ AI ❤ OBSERVABILITY ❤ DOCUMENTATION ❤ METHODOLOGIES ❤ FRONTEND ❤ QA
+                            <animate attributeName="startOffset" from="-100%" to="0%" dur="15s" repeatCount="indefinite"></animate>
+                        </textPath>
+                    </text>
+                </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-indicator bg-black/60 backdrop-blur-md py-6 px-2 rounded-3xl hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-20 text-white flex-col items-center gap-2">
+          <span class="text-sm font-semibold tracking-widest uppercase">Scroll</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 animate-bounce" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+        </div>
+      </section>
+
+      <!-- Terminal Entry Section -->
+      <section class="min-h-[40vh] mb-24 px-4 py-16 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjODA4MDgwIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg==')] opacity-20"></div>
+        <p id="scroll-typewriter-text" class="text-xl md:text-4xl font-bold text-center max-w-5xl px-6 leading-relaxed text-text-secondary font-mono relative z-10 mb-8" data-i18n="scroll_text">
+          Architecting the invisible backend that powers digital experiences.
+        </p>
+        <div class="flex gap-4 flex-wrap justify-center">
+          <button id="open-terminal-btn" class="terminal-btn">
+            [ SYSTEM_ACCESS ]
+          </button>
+          <button id="open-terminal-btn2" class="terminal-btn">
+            [ SYSTEM_HACKER ]
+          </button>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section id="about" class="pb-24 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-12">
+            <h2 class="text-4xl md:text-6xl font-black uppercase mb-4" data-i18n="about_title">ABOUT ME</h2>
+            <p class="text-xl text-text-secondary font-light" data-i18n="about_subtitle">// My journey</p>
+          </div>
+          <div class="grid md:grid-cols-12 gap-10 items-start gs-reveal-up opacity-0 translate-y-10">
+            <div class="md:col-span-5 relative group z-10">
+              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7tetRlQiLd5hTwBQDpCt9xZD_wOKWxmsvrfb8R6Ml3ZqnpFkv78Fn0zlVcJm_webP90B8tajMmwdjrb_m-S6vCnjoVnQSaUtxlokKRBo6UpKuftVk_FZrYSVCS0h0Brjh8Xn9aoSDk5_-HfywZVCvmDG3KJxKmUGPzMsQqCaHcp3I5g/s1600/awsfasfagr.png2.png" class="w-full rounded-2xl group-hover:grayscale-0 transition-all duration-500 shadow-2xl bg-accent object-cover h-[500px]" alt="About">
+              <div class="absolute text-center -top-4 -left-4 bg-white text-black p-3 rounded-xl font-bold shadow-lg rotate-[-5deg] text-xs">
+                <span data-i18n="experience1" class="whitespace-pre-line">+1 YEAR OF<br>EXPERIENCE<br>DATA</span>
+              </div>
+              <div class="absolute text-center -bottom-4 -left-4 bg-white text-black p-3 rounded-xl font-bold shadow-lg rotate-[-5deg] text-xs">
+                <span data-i18n="experience2" class="whitespace-pre-line">+2 YEAR OF<br>EXPERIENCE<br>IA</span>
+              </div>
+              <div class="absolute text-center -bottom-4 -right-4 bg-white text-black p-3 rounded-xl font-bold shadow-lg rotate-[5deg] text-xs">
+                <span data-i18n="experience3" class="whitespace-pre-line">+5 YEAR OF<br>EXPERIENCE<br>CODE</span>
+              </div>
+            </div>
+            
+            <div class="md:col-span-7 bg-black/60 backdrop-blur-md rounded-2xl p-6 md:p-10 border border-white/5">
+              <p class="text-base md:text-lg leading-relaxed mb-8 whitespace-pre-line text-text-secondary" data-i18n="about_text1">
+                Hi, I'm Rogério!<br><br>At 26 years old, and with a career path that began in 2018, I am embarking on a new professional chapter focused on my active return to the technology sector. I am a software developer with solid experience in the financial and banking industry, specializing in modernizing undocumented, monolithic legacy systems—transforming them into scalable architectures designed to reduce infrastructure costs, minimize technical support needs, and enhance operational efficiency. By leveraging AI-assisted development, I have managed to reduce project delivery times and costs by up to three times.<br><br>With over 5 years of development experience, more than 2 years in Generative AI, and over 1 year in data engineering, I have managed mission-critical systems for organizations with revenues in the millions or billions of dollars—consistently ensuring high availability, regulatory compliance, and adherence to mandatory requirements.<br><br>I place great value on understanding the underlying processes, as this fosters better collaboration across teams and enables the creation of seamless user experiences that drive both results and revenue.
+              </p>
+              
+              <h3 class="text-2xl font-bold mb-6 text-white" data-i18n="process_title">My Design Process</h3>
+              <div class="space-y-6">
+                <div class="flex gap-4 items-start group">
+                  <span class="text-4xl md:text-5xl font-black text-outline opacity-30 group-hover:opacity-100 group-hover:text-accent transition-all leading-none mt-1">01</span>
+                  <div>
+                    <h4 class="text-lg font-bold mb-1 text-white" data-i18n="step1_title">Research & Discovery</h4>
+                    <p class="text-sm text-text-secondary" data-i18n="step1_desc">Understanding user needs and business goals</p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start group">
+                  <span class="text-4xl md:text-5xl font-black text-outline opacity-30 group-hover:opacity-100 group-hover:text-accent transition-all leading-none mt-1">02</span>
+                  <div>
+                    <h4 class="text-lg font-bold mb-1 text-white" data-i18n="step2_title">Strategy & Ideation</h4>
+                    <p class="text-sm text-text-secondary" data-i18n="step2_desc">Developing concepts that solve real problems</p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start group">
+                  <span class="text-4xl md:text-5xl font-black text-outline opacity-30 group-hover:opacity-100 group-hover:text-accent transition-all leading-none mt-1">03</span>
+                  <div>
+                    <h4 class="text-lg font-bold mb-1 text-white" data-i18n="step3_title">Logic & Prototyping</h4>
+                    <p class="text-sm text-text-secondary" data-i18n="step3_desc">Creating high-fidelity designs and interactive prototypes</p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start group">
+                  <span class="text-4xl md:text-5xl font-black text-outline opacity-30 group-hover:opacity-100 group-hover:text-accent transition-all leading-none mt-1">04</span>
+                  <div>
+                    <h4 class="text-lg font-bold mb-1 text-white" data-i18n="step4_title">Testing & Iteration</h4>
+                    <p class="text-sm text-text-secondary" data-i18n="step4_desc">Validating solutions with users and refining based on feedback</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services -->
+      <section id="services" class="pb-32 px-4 relative">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-6xl font-black uppercase mb-4" data-i18n="nav_serv">SERVICES</h2>
+            <p class="text-xl text-text-secondary font-light" data-i18n="serv_subtitle">// What I can do for you</p>
+          </div>
+          
+          <div class="grid md:grid-cols-3 gap-6 gs-reveal-up opacity-0 translate-y-10">
+            <!-- Service 1 -->
+            <div class="bg-black/60 backdrop-blur-md border border-white/5 p-8 rounded-2xl hover:border-accent/50 transition-colors group">
+              <div class="text-accent mb-6">
+                <svg class="w-12 h-12 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-4" data-i18n="serv1_title">Backend Architecture</h3>
+              <p class="text-text-secondary text-sm leading-relaxed" data-i18n="serv1_desc">Design and development of robust, scalable, and secure server-side applications and RESTful APIs optimized for high performance.</p>
+            </div>
+            
+            <!-- Service 2 -->
+            <div class="bg-black/60 backdrop-blur-md border border-white/5 p-8 rounded-2xl hover:border-accent/50 transition-colors group">
+              <div class="text-accent mb-6">
+                <svg class="w-12 h-12 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-4" data-i18n="serv2_title">AI Integration</h3>
+              <p class="text-text-secondary text-sm leading-relaxed" data-i18n="serv2_desc">Implementing Generative AI and LLMs into your existing systems to automate workflows, generate insights, and enhance user interaction.</p>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="bg-black/60 backdrop-blur-md border border-white/5 p-8 rounded-2xl hover:border-accent/50 transition-colors group">
+              <div class="text-accent mb-6">
+                <svg class="w-12 h-12 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-4" data-i18n="serv3_title">Data Engineering</h3>
+              <p class="text-text-secondary text-sm leading-relaxed" data-i18n="serv3_desc">Structuring, optimizing, and maintaining large-scale databases and observability pipelines to ensure data integrity and real-time monitoring.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Badges Loop -->
+      <section id="quali" class="pb-24 px-4">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-12">
+          <h2 class="text-4xl md:text-6xl font-black uppercase mb-4" data-i18n="nav_skills">QUALIFICATION</h2>
+          <p class="text-xl text-text-secondary font-light" data-i18n="skills_subtitle">// Certifications & Badges</p>
+        </div>
+
+        <div class="max-w-7xl mx-auto bg-black/60 backdrop-blur-md rounded-2xl md:rounded-3xl border border-border relative p-6 md:p-12 overflow-hidden shadow-2xl">
+          
+          <div class="grid lg:grid-cols-12 gap-8 items-center relative z-10">
+            
+            <div class="col-span-12 relative w-full overflow-hidden mask-fade-edges py-4">
+              
+              <div class="flex gap-4 w-max animate-loop-scroll">
+                
+                <div class="flex items-center gap-4">
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">AWS Certified Developer</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Google Cloud Professional</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Certified Scrum Master</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Azure Fundamentals</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Kubernetes Administrator</div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">AWS Certified Developer</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Google Cloud Professional</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Certified Scrum Master</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Azure Fundamentals</div>
+                  <div class="px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase border border-border bg-background/50 whitespace-nowrap hover:bg-border/30 transition-colors">Kubernetes Administrator</div>
+                </div>
+                
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Skills -->
+      <section id="skills" class="pb-24 px-4">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-12">
+          <h2 class="text-4xl md:text-6xl font-black uppercase mb-4" data-i18n="nav_skills">SKILLS</h2>
+          <p class="text-xl text-text-secondary font-light" data-i18n="skills_subtitle">// My technical arsenal</p>
+        </div>
+        
+        <div class="max-w-7xl mx-auto bg-black/60 backdrop-blur-md rounded-2xl md:rounded-3xl border border-border relative p-6 md:p-12 overflow-hidden shadow-2xl">
+          <div class="grid lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div class="flex flex-col gap-6 order-2 lg:order-1">
+              <div class="flex flex-wrap justify-center md:justify-start gap-2 mb-2 p-1 bg-background/50 rounded-lg w-full md:w-fit border border-border">
+                <button data-filter="all" class="sphere-filter active flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="filter_all">All</button>
+                <button data-filter="ai" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="filter_ai">AI</button>
+                <button data-filter="backend" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Backend</button>
+                <button data-filter="frontend" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Front</button>
+                <button data-filter="mobile" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Mobile</button>
+                <button data-filter="frameworks" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Frameworks</button>
+                <button data-filter="cloud" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Cloud</button>
+                <button data-filter="data" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Data</button>
+                <button data-filter="testing" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >QA</button>
+                <button data-filter="observability" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="observability">Observability</button>
+                <button data-filter="documentation" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="documentation">Documentation</button>
+                <button data-filter="design" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" >Design</button>
+                <button data-filter="methodologies" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border"  data-i18n="methodologies">Methodologies</button>
+                <button data-filter="tools" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="tools">Tools</button>
+                <button data-filter="container" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="container">Container</button>
+                <button data-filter="protocol" class="sphere-filter flex-1 md:flex-none px-3 py-2 rounded-md text-[10px] md:text-xs font-bold uppercase border border-transparent hover:border-border" data-i18n="protocol">Protocol</button>
+              </div>
+              <div class="relative h-[280px] md:h-[450px] w-full rounded-2xl overflow-hidden flex items-center justify-center bg-background/30 shadow-inner border border-border">
+                <canvas id="sphereCanvas" class="w-full h-full"></canvas>
+              </div>
+            </div>
+            
+            <div class="space-y-10 order-1 lg:order-2">
+              <div class="space-y-6">
+                <div class="group">
+                  <div class="flex justify-between text-xs font-bold mb-2 tracking-widest text-text uppercase uppercase">
+                    <span data-i18n="skill_back">BACKEND</span>
+                  </div>
+                  <div class="h-[8px] bg-background rounded-full overflow-hidden border border-border shadow-inner relative">
+                    <div class="skill-bar liquid-bar h-full relative w-0" data-width="95%"></div>
+                  </div>
+                </div>
+                <div class="group">
+                  <div class="flex justify-between text-xs font-bold mb-2 tracking-widest text-text uppercase">
+                    <span>FRONTEND</span>
+                  </div>
+                  <div class="h-[8px] bg-background rounded-full overflow-hidden border border-border shadow-inner relative">
+                    <div class="skill-bar liquid-bar h-full relative w-0" data-width="62%"></div>
+                  </div>
+                </div>
+                <div class="group">
+                  <div class="flex justify-between text-xs font-bold mb-2 tracking-widest text-text uppercase">
+                    <span>TESTING</span>
+                  </div>
+                  <div class="h-[8px] bg-background rounded-full overflow-hidden border border-border shadow-inner relative">
+                    <div class="skill-bar liquid-bar h-full relative w-0" data-width="90%"></div>
+                  </div>
+                </div>
+                <div class="group">
+                  <div class="flex justify-between text-xs font-bold mb-2 tracking-widest text-text uppercase">
+                    <span data-i18n="observability">OBSERVABILITY</span>
+                  </div>
+                  <div class="h-[8px] bg-background rounded-full overflow-hidden border border-border shadow-inner relative">
+                    <div class="skill-bar liquid-bar h-full relative w-0" data-width="85%"></div>
+                  </div>
+                </div>
+                <div class="group">
+                  <div class="flex justify-between text-xs font-bold mb-2 tracking-widest text-text uppercase">
+                    <span data-i18n="skill_system">SYSTEMS DESIGN</span>
+                  </div>
+                  <div class="h-[8px] bg-background rounded-full overflow-hidden border border-border shadow-inner relative">
+                    <div class="skill-bar liquid-bar h-full relative w-0" data-width="70%"></div>
+                  </div>
+                </div>
+                <div class="group">
+                  <div class="flex justify-between text-xs font-bold mb-2 tracking-widest text-text uppercase">
+                    <span data-i18n="skill_ai">AI INTEGRATION</span>
+                  </div>
+                  <div class="h-[8px] bg-background rounded-full overflow-hidden border border-border shadow-inner relative">
+                    <div class="skill-bar liquid-bar h-full relative w-0" data-width="85%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Works -->
+      <section id="work" class="pb-24 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-6xl font-black uppercase mb-4 tracking-tight gs-work-title" data-i18n="work_title">VIEW WORKS</h2>
+            <p class="text-text-secondary max-w-2xl mx-auto gs-work-subtitle" data-i18n="wok_subtitle" >// Collection of recent projects</p>
+          </div>
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="work-grid">
+            
+            <article class="work-card group relative bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden cursor-pointer hover:border-accent/50 transition-all duration-500 shadow-lg hover:shadow-accent/10" data-project-index="0">
+              <div class="h-64 overflow-hidden relative">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10"></div>
+                <img src="https://placehold.co/800x600/000/fff?text=EM+BREVE&font=Poppins" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" alt="Project 1">
+              </div>
+              <div class="p-8 relative">
+                <div class="absolute top-0 right-0 -mt-4 mr-6">
+                  <span class="bg-accent text-background text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">Frontend</span>
+                </div>
+                <h3 id="work-title-0" class="text-2xl font-bold mb-3 text-white group-hover:text-accent transition-colors">Store Website</h3>
+                <p id="work-desc-0" class="text-text-secondary text-sm leading-relaxed line-clamp-2">Store catalog for WhatsApp.</p>
+              </div>
+            </article>
+
+            <article class="work-card group relative bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden cursor-pointer hover:border-accent/50 transition-all duration-500 shadow-lg hover:shadow-accent/10" data-project-index="1">
+              <div class="h-64 overflow-hidden relative">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10"></div>
+                <img src="https://placehold.co/800x600/000/fff?text=EM+BREVE&font=Poppins" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" alt="Project 2">
+              </div>
+              <div class="p-8 relative">
+                <div class="absolute top-0 right-0 -mt-4 mr-6">
+                  <span class="bg-accent text-background text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">Backend</span>
+                </div>
+                <h3 id="work-title-1" class="text-2xl font-bold mb-3 text-white group-hover:text-accent transition-colors">API in Go</h3>
+                <p id="work-desc-1" class="text-text-secondary text-sm leading-relaxed line-clamp-2">An API in Go and a database.</p>
+              </div>
+            </article>
+
+            <article class="work-card group relative bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden cursor-pointer hover:border-accent/50 transition-all duration-500 shadow-lg hover:shadow-accent/10" data-project-index="2">
+              <div class="h-64 overflow-hidden relative">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10"></div>
+                <img src="https://placehold.co/800x600/000/fff?text=EM+BREVE&font=Poppins" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" alt="Project 3">
+              </div>
+              <div class="p-8 relative">
+                <div class="absolute top-0 right-0 -mt-4 mr-6">
+                  <span class="bg-accent text-background text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">Observability</span>
+                </div>
+                <h3 id="work-title-2" class="text-2xl font-bold mb-3 text-white group-hover:text-accent transition-colors">Prometheus & Grafana</h3>
+                <p id="work-desc-2" class="text-text-secondary text-sm leading-relaxed line-clamp-2">Monitoring using Prometheus and Grafana.</p>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Tech Cube -->
+      <section id="tech" class="pb-24 px-4 overflow-hidden">
+        <div class="max-w-7xl mx-auto flex flex-col items-center">
+          <div class="text-center mb-12">
+            <h2 class="text-4xl md:text-6xl font-black uppercase mb-4" data-i18n="tech_title">TECHNOLOGIES</h2>
+            <p class="text-xl text-text-secondary font-light max-w-lg mx-auto" data-i18n="tech_subtitle">// Technologies used</p>
+          </div>
+          <nav class="flex flex-wrap justify-center gap-3 mb-16 px-4 z-20">
+            <button class="bg-black/60 btn-cube-nav backdrop-blur-md px-5 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-md" data-side="front" >HTML</button>
+            <button class="bg-black/60 btn-cube-nav backdrop-blur-md px-5 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-md" data-side="right" >CSS</button>
+            <button class="bg-black/60 btn-cube-nav backdrop-blur-md px-5 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-md" data-side="back" >JavaScript</button>
+            <button class="bg-black/60 btn-cube-nav backdrop-blur-md px-5 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-md" data-side="left" >Tailwind</button>
+            <button class="bg-black/60 btn-cube-nav backdrop-blur-md px-5 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-md" data-side="top" >Three.js</button>
+            <button class="bg-black/60 btn-cube-nav backdrop-blur-md px-5 py-2 border text-xs md:text-sm font-bold uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-md" data-side="bottom" >GSAP</button>
+          </nav>
+          
+          <div class="cube-container z-10">
+            <div id="cube" class="cube show-front">
+              <div class="cube-face bg-black/60 backdrop-blur-md face-front flex flex-col items-center justify-evenly p-6 border border-white/10">
+                <h2 class="text-accent font-bold uppercase tracking-widest text-lg md:text-2xl" >HTML 5</h2>
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" class="w-1/2 h-1/2 object-contain drop-shadow-lg" alt="HTML5 Logo">
+              </div>
+              <div class="cube-face bg-black/60 backdrop-blur-md face-right flex flex-col items-center justify-evenly p-6 border border-white/10">
+                <h2 class="text-accent font-bold uppercase tracking-widest text-lg md:text-2xl" >CSS 3</h2>
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" class="w-1/2 h-1/2 object-contain drop-shadow-lg" alt="CSS3 Logo">
+              </div>
+              <div class="cube-face bg-black/60 backdrop-blur-md face-back flex flex-col items-center justify-evenly p-6 border border-white/10">
+                <h2 class="text-accent font-bold uppercase tracking-widest text-lg md:text-2xl" >JavaScript</h2>
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" class="w-1/2 h-1/2 object-contain drop-shadow-lg rounded-xl" alt="JavaScript Logo">
+              </div>
+              <div class="cube-face bg-black/60 backdrop-blur-md face-left flex flex-col items-center justify-evenly p-6 border border-white/10">
+                <h2 class="text-accent font-bold uppercase tracking-widest text-lg md:text-2xl" >Tailwind CSS</h2>
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg" class="w-1/2 h-1/2 object-contain drop-shadow-lg" alt="Tailwind Logo">
+              </div>
+              <div class="cube-face bg-black/60 backdrop-blur-md face-top flex flex-col items-center justify-evenly p-6 border border-white/10">
+                <h2 class="text-accent font-bold uppercase tracking-widest text-lg md:text-2xl" >Three.js</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><g fill="#FFF" font-weight="400" font-family="sans-serif"><path style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#FFF;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;isolation:auto;mix-blend-mode:normal;solid-color:#FFF;solid-opacity:1" d="M16.219 15.762a1.129 1.129 0 00-1.076 1.399l24.394 98.742a1.129 1.129 0 001.879.544l73.386-70.59a1.129 1.129 0 00-.47-1.899L16.55 15.806a1.129 1.129 0 00-.331-.044zm1.584 2.754l94.024 27.07-70.566 67.877-23.458-94.947z" overflow="visible"/><path style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#FFF;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;isolation:auto;mix-blend-mode:normal;solid-color:#FFF;solid-opacity:1" d="M65.137 29.84a1.129 1.129 0 00-.807.315L27.654 65.46a1.129 1.129 0 00.471 1.898L76.984 81.44a1.129 1.129 0 001.409-1.355L66.21 30.698a1.129 1.129 0 00-1.073-.858zm-.651 3.3L75.734 78.73l-45.104-13L64.486 33.14z" overflow="visible"/><path style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#FFF;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;isolation:auto;mix-blend-mode:normal;solid-color:#FFF;solid-opacity:1" d="M46.914 47.313a1.129 1.129 0 00-1.076 1.399l6.054 24.531a1.129 1.129 0 001.88.543l18.222-17.563a1.129 1.129 0 00-.472-1.898l-24.277-6.968a1.129 1.129 0 00-.331-.044zm1.583 2.751l20.522 5.89L53.614 70.8l-5.117-20.736z" overflow="visible"/><path style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#FFF;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;isolation:auto;mix-blend-mode:normal;solid-color:#FFF;solid-opacity:1" d="M40.902 22.809a1.129 1.129 0 00-.807.316L21.873 40.687a1.129 1.129 0 00.472 1.898l24.273 6.969a1.129 1.129 0 001.408-1.356l-6.051-24.53a1.129 1.129 0 00-1.073-.86zm-.65 3.3l5.114 20.736-20.517-5.89 15.403-14.847zM89.453 36.793a1.129 1.129 0 00-.806.316L70.423 54.67a1.129 1.129 0 00.472 1.899l24.274 6.968a1.129 1.129 0 001.408-1.356l-6.05-24.53a1.129 1.129 0 00-1.074-.859zm-.65 3.3l5.114 20.737L73.4 54.94l15.403-14.846zM52.944 71.864a1.129 1.129 0 00-.74.315L33.982 89.742a1.129 1.129 0 00.472 1.898l24.278 6.968a1.129 1.129 0 001.407-1.355l-6.055-24.531a1.129 1.129 0 00-1.14-.858zm-.582 3.3l5.118 20.737-20.522-5.89 15.404-14.846z" overflow="visible"/></g></svg>
+              </div>
+              <div class="cube-face bg-black/60 backdrop-blur-md face-bottom flex flex-col items-center justify-evenly p-6 border border-white/10">
+                <h2 class="text-accent font-bold uppercase tracking-widest text-lg md:text-2xl">GSAP</h2>
+                <img src="https://cdn.worldvectorlogo.com/logos/gsap-greensock.svg" class="w-1/2 h-1/2 object-contain drop-shadow-lg" alt="GSAP Logo">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="pb-24 px-4 contact-section">
+        <div class="max-w-7xl mx-auto px-4">
+          <div class="max-w-3xl mx-auto text-center mb-12">
+            <h2 class="text-4xl md:text-6xl font-black uppercase mb-4 tracking-tighter" data-i18n="contact_title">Get in Touch</h2>
+            <p class="text-xl text-text-secondary font-light" data-i18n="contact_subtitle">// Choose the best channel:</p>
+          </div>
+          
+          <div class="max-w-5xl mx-auto">
+            <div class="bg-black/60 backdrop-blur-md p-8 md:p-14 rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden">
+              <div class="flex flex-col items-center mb-12 group">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="p-2 bg-accent/10 rounded-lg text-accent">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  </span>
+                  <h3 class="text-xs uppercase tracking-[0.3em] text-text-secondary font-bold" data-i18n="location">Location</h3>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-white" data-i18n="country">São Paulo, Brazil</p>
+              </div>
+              
+              <div class="grid md:grid-cols-2 gap-6">
+                <!-- LinkedIn -->
+                <div class="relative group h-full">
+                  <div class="absolute -inset-1 bg-[#0077b5] rounded-full blur opacity-10 group-hover:opacity-30 transition duration-500"></div>
+                  <a href="https://linkedin.com" target="_blank" class="relative w-full py-5 bg-[#0077b5] text-white rounded-full font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-xl border border-white/10 overflow-hidden h-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    <span>LinkedIn</span>
+                  </a>
+                </div>
+                
+                <!-- GitHub -->
+                <div class="relative group h-full">
+                  <div class="absolute -inset-1 bg-[#181717] rounded-full blur opacity-10 group-hover:opacity-30 transition duration-500"></div>
+                  <a href="https://github.com/rogerio-lkdarts" target="_blank" class="relative w-full py-5 bg-[#181717] text-white rounded-full font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-xl border border-white/10 overflow-hidden h-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    <span>GitHub</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Video / Audio Player -->
+      <section class="pb-24 px-4">
+        <div class="max-w-2xl mx-auto flex flex-col items-center">
+          <div class="w-full overflow-hidden rounded-2xl p-2">
+            <div id="youtube-audio-player" class="aspect-video w-full rounded-xl"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pt-10 pb-24 border-t border-border text-center text-text-secondary text-sm bg-background/80 backdrop-blur-md">
+      <p data-i18n="footer_rights">© 2026. All rights reserved.</p>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Project Modal -->
+    <div id="project-modal" class="fixed inset-0 z-[100] hidden opacity-0 transition-all duration-300" aria-hidden="true">
+      <div class="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity modal-overlay"></div>
+      <div class="relative w-full h-full flex items-center justify-center p-4 md:p-8">
+        <div class="bg-[#0f0f0f] border border-white/10 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl transform scale-95 transition-all duration-300 flex flex-col" id="modal-content">
+          <button class="close-modal absolute top-4 right-4 z-20 w-10 h-10 bg-black/50 hover:bg-accent hover:text-white rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all duration-300 border border-white/10">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <div class="h-64 md:h-[400px] w-full relative shrink-0">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] to-transparent z-10"></div>
+            <img id="modal-image" src="" class="w-full h-full object-cover" alt="Project Cover">
+          </div>
+          <div class="p-8 md:p-12 -mt-12 relative z-20">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-8 border-b border-white/10 pb-8">
+              <div>
+                <span id="modal-tag" class="text-accent font-bold tracking-widest text-xs uppercase mb-3 block border border-accent/30 inline-block px-3 py-1 rounded-full">Tag</span>
+                <h2 id="modal-title" class="text-3xl md:text-5xl font-black uppercase text-white leading-tight">Title</h2>
+              </div>
+              <a href="#" id="modal-link" target="_blank" class="shrink-0 flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-bold hover:bg-accent hover:text-white transition-all">
+                <span data-i18n="btn_view_live">View Project</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
+            </div>
+            <div class="grid md:grid-cols-3 gap-12">
+              <div class="md:col-span-2 text-gray-300 text-lg leading-relaxed space-y-4 font-light whitespace-pre-line" id="modal-desc"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal Modal 1 -->
+    <div id="terminal-modal" class="fixed inset-0 z-[70] hidden opacity-0 transition-opacity duration-300">
+      <div class="absolute inset-0 bg-black/90 backdrop-blur-md terminal-overlay cursor-pointer"></div>
+      <div class="relative w-full h-full max-w-4xl max-h-[80vh] flex items-center justify-center p-4 mx-auto mt-[5vh]">
+        <div class="tr-container border border-accent rounded-lg transform scale-95 transition-transform duration-300 relative" id="terminal-content-box">
+          <button class="close-terminal absolute top-2 right-4 text-accent font-bold z-50 text-xl hover:text-white transition-colors">X</button>
+          <div class="tr-terminal">
+            <div class="tr-header"><p><br></p></div>
+            <div class="tr-content">
+              <p class="tr-output"></p>
+              <p class="tr-typing"></p>
+              <p class="tr-input" style="margin-top:20px; display:none;" id="tr-input-line">
+                <span class="tr-prompt">root@system:/admin$</span> <span class="tr-cursor"></span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal Modal 2 -->
+    <div id="terminal2-modal" class="fixed inset-0 z-[70] hidden opacity-0 transition-opacity duration-300">
+      <div class="absolute inset-0 bg-black/90 backdrop-blur-md terminal-overlay cursor-pointer"></div>
+      
+      <div class="relative w-full h-full flex items-center justify-center p-4 mx-auto">
+        <div class="tr-container border border-accent rounded-lg transform scale-95 transition-transform duration-300 relative w-full h-full flex flex-col" id="terminal2-content-box">
+          <button class="close-terminal absolute top-2 right-4 text-accent font-bold z-[200] text-xl hover:text-white transition-colors">X</button>
+          
+          <div class="scanlines absolute inset-0 w-full h-full pointer-events-none z-[100]"></div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-[65%_35%] grid-rows-[50%_50%] md:grid-rows-[45%_55%] w-full h-full flex-1">
+            
+            <div class="relative overflow-hidden bg-black/80 border-b border-accent shadow-inner md:border-r">
+              <div class="absolute z-10 top-2.5 left-4 bg-black px-2 py-0.5 font-bold tracking-[2px] border border-accent text-accent text-[10px] md:text-xs">VIRTUAL_ENV::NEURAL_LINK</div>
+              <canvas id="canvas3d" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
+
+            <div class="relative overflow-hidden bg-black/80 border-b border-accent shadow-inner">
+              <div class="absolute z-10 top-2.5 left-4 bg-black px-2 py-0.5 font-bold tracking-[2px] border border-accent text-accent text-[10px] md:text-xs">FREQ_ANALYSIS</div>
+              <canvas id="canvasBars" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
+
+            <div class="relative overflow-hidden bg-black/80 border-accent shadow-inner md:border-r md:border-b-0 border-b">
+              <div class="absolute z-10 top-2.5 left-4 bg-black px-2 py-0.5 font-bold tracking-[2px] border border-accent text-accent text-[10px] md:text-xs">CORE_DATA_STREAM</div>
+              <canvas id="canvasMatrix" class="absolute inset-0 w-full h-full"></canvas>
+              
+              <div class="absolute bottom-5 left-5 z-10 bg-black/90 p-3 border-l-[3px] border-accent text-accent text-xs">
+                <div>[ STATUS ] SYSTEM_BREACH_SUCCESSFUL</div>
+                <div class="text-white mt-1">
+                  > UPLINK: <span class="animate-blink text-accent">ENCRYPTED</span>
+                </div>
+                <div class="text-[10px] mt-2 opacity-60">LOCATING SECTOR 7G...</div>
+              </div>
+            </div>
+
+            <div id="liveConsole" class="relative overflow-y-auto overflow-x-hidden bg-black/80 shadow-inner p-4 text-xs font-mono text-accent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==========================================
+      // 1. DATA & TRANSLATIONS
+      // ==========================================
+      const translations = {
+        en: {
+          nav_work: "Works", nav_about: "About", nav_contact: "Contact", nav_skills: "Skills", nav_quali: "Qualification", nav_tec: "Technologies", nav_exp: "Experience", nav_serv: "Services",
+          hero_role: "SOFTWARE DEVELOPER", hero_role2: "❤ FULLSTACK ❤ BACKEND ❤ UX DESIGN ❤ AI ❤ OBSERVABILITY ❤ DOCUMENTATION ❤ METHODOLOGIES ❤ FRONTEND ❤ QA",
+          work_title: "VIEW WORKS", about_title: "ABOUT ME", skills_subtitle: "// My technical arsenal", about_subtitle: "// My journey", wok_subtitle: "// Collection of recent projects", exp_subtitle: "// Professional timeline", serv_subtitle: "// What I can do for you",
+          experience1: "+1 YEAR OF\nEXPERIENCE\nDATA",experience2: "+2 YEAR OF\nEXPERIENCE\nIA",experience3: "+5 YEAR OF\nEXPERIENCE\nCODE",
+          about_text1: "Hello, I’m Rogério!\n\nAt 26 years old, and with a career path that began in 2018, I am embarking on a new professional chapter focused on my active return to the technology sector. I am a software developer with solid experience in the financial and banking industry, specializing in modernizing undocumented, monolithic legacy systems—transforming them into scalable architectures designed to reduce infrastructure costs, minimize technical support needs, and enhance operational efficiency. By leveraging AI-assisted development, I have managed to reduce project delivery times and costs by up to three times.\n\nWith over 5 years of development experience, more than 2 years in Generative AI, and over 1 year in data engineering, I have managed mission-critical systems for organizations with revenues in the millions or billions of dollars—consistently ensuring high availability, regulatory compliance, and adherence to mandatory requirements.\n\nI place great value on understanding the underlying processes, as this fosters better collaboration across teams and enables the creation of seamless user experiences that drive both results and revenue.",
+          process_title: "My Design Process", step1_title: "Research & Discovery", step1_desc: "Understanding user needs and business goals",
+          step2_title: "Strategy & Ideation", step2_desc: "Developing concepts that solve real problems",
+          step3_title: "Logic & Prototyping", step3_desc: "Creating high-fidelity designs and interactive prototypes",
+          step4_title: "Testing & Iteration", step4_desc: "Validating solutions with users and refining based on feedback",
+          
+          exp1_title: "Senior Backend Developer", exp1_meta: "Banking Sector | 2022 - Present", exp1_desc: "Lead the modernization of legacy monolithic systems into scalable microservices architectures. Reduced infrastructure costs by 40% and improved system stability for millions of daily transactions.",
+          exp2_title: "Fullstack Developer", exp2_meta: "Tech Solutions Inc. | 2019 - 2022", exp2_desc: "Developed and maintained robust web applications using React and Node.js. Integrated third-party payment gateways and designed RESTful APIs utilized by over 50k users monthly.",
+          exp3_title: "Junior Developer", exp3_meta: "Creative Agency | 2018 - 2019", exp3_desc: "Assisted in the development of responsive websites and internal tools. Gained foundational experience in database management, version control, and agile methodologies.",
+
+          serv1_title: "Backend Architecture", serv1_desc: "Design and development of robust, scalable, and secure server-side applications and RESTful APIs optimized for high performance.",
+          serv2_title: "AI Integration", serv2_desc: "Implementation of Generative AI and LLMs to automate workflows and generate insights.",
+          serv3_title: "Data Engineering", serv3_desc: "Structuring, optimizing, and maintaining large-scale databases and observability pipelines to ensure data integrity and real-time monitoring.",
+
+          skills_title: "Testing & Iteration", contact_title: "GET IN TOUCH", contact_subtitle: "// Choose the best channel:",
+          location: "Location", country: "São Paulo, Brazil", btn_email: "Send Message", footer_rights: "© 2026. All rights reserved.",
+          btn_view_live: "View Project", filter_all: "All", filter_ai: "AI",  
+          skill_back: "BACKEND", skill_system: "SYSTEMS DESIGN", skill_ai: "AI INTEGRATION",
+          scroll_text: "Building and modernizing the invisible backend that underpins digital experiences.", tech_title:"TECHNOLOGIES", 
+          tech_subtitle: "// Technologies used",
+          hero_phrases: ["Building Digital Experiences.", "Modernizing Legacy Systems.", "Creating Solutions with AI.", "Developing Full-Stack Applications.", "Designing Cloud Systems."],
+          
+          observability: "Observability", documentation: "Documentation", methodologies: "Methodologies",
+          tools: "Tools", container: "Container", protocol: "Protocol",
+        },
+        pt: {
+          nav_work: "Trabalhos", nav_about: "Sobre", nav_contact: "Contato", nav_skills: "Habilidades", nav_quali: "Qualificação", nav_tec: "Tecnologias", nav_exp: "Experiência", nav_serv: "Serviços",
+          hero_role: "DESENVOLVEDOR DE SOFTWARE", hero_role2: "❤ FULLSTACK ❤ BACKEND ❤ UX DESIGN ❤ IA ❤ OBSERVABILIDADE ❤ DOCUMENTAÇÃO ❤ METODOLOGIAS ❤ FRONTEND ❤ QA",
+          work_title: "VER TRABALHOS", about_title: "SOBRE MIM", skills_subtitle: "// Meu arsenal técnico",  about_subtitle: "// Minha jornada", wok_subtitle: "// Projetos recentes", exp_subtitle: "// Trajetória profissional", serv_subtitle: "// O que eu posso fazer por você",
+          experience1: "+1 ANO DE\nEXPERIÊNCIA\nEM DADOS", experience2: "+2 ANOS DE\nEXPERIÊNCIA\nEM IA", experience3: "+5 ANOS DE\nEXPERIÊNCIA\nEM CÓDIGO",
+          about_text1: "Olá, sou o Rogério!\n\nAos 26 anos e com uma trajetória iniciada em 2018, estou abrindo um novo ciclo de carreira focado em meu retorno ativo à área de tecnologia. Sou desenvolvedor de software com sólida experiência no setor financeiro e bancário, especializado em modernizar sistemas legados monolíticos e sem documentação, transformando-os em arquiteturas escaláveis focadas na redução de custos de infraestrutura, suporte técnico e eficiência operacional. Com a adoção do desenvolvimento assistido por IA, consegui reduzir o tempo e os custos de entrega de projetos em até 3 vezes.\n\nCom mais de 5 anos de experiência em desenvolvimento, mais de 2 anos em IA Generativa e mais de 1 ano em engenharia de dados, gerencio sistemas de missão crítica em ambientes com faturamento de bilhões ou milhões de dólares, garantindo alta disponibilidade, conformidade regulatória e requisitos obrigatórios.\n\nValorizo a compreensão do processo para promover uma melhor colaboração com as equipes e criar experiências de usuário perfeitas que impulsionem resultados e receita.",
+          process_title: "Meu Processo", step1_title: "Pesquisa & Descoberta", step1_desc: "Entendendo necessidades do usuário e metas",
+          step2_title: "Estratégia & Ideação", step2_desc: "Desenvolvendo conceitos para resolver problemas",
+          step3_title: "Lógica & Prototipagem", step3_desc: "Criando protótipos de alta fidelidade e lógica",
+          step4_title: "Testes & Validação", step4_desc: "Ajustando e refinando baseado em feedback",
+          
+          exp1_title: "Desenvolvedor Backend Senior", exp1_meta: "Setor Bancário | 2022 - Atual", exp1_desc: "Liderei a modernização de sistemas monolíticos legados para arquiteturas de microsserviços. Reduzi os custos de infraestrutura em 40% e melhorei a estabilidade para milhões de transações diárias.",
+          exp2_title: "Desenvolvedor Fullstack", exp2_meta: "Tech Solutions Inc. | 2019 - 2022", exp2_desc: "Desenvolvi aplicações web usando React e Node.js. Integrei gateways de pagamento e criei APIs RESTful utilizadas por mais de 50 mil usuários mensalmente.",
+          exp3_title: "Desenvolvedor Júnior", exp3_meta: "Agência Criativa | 2018 - 2019", exp3_desc: "Auxiliei no desenvolvimento de sites responsivos. Adquiri experiência prática com bancos de dados, controle de versão e metodologias ágeis.",
+          
+          serv1_title: "Arquitetura Backend", serv1_desc: "Design e desenvolvimento de aplicações e APIs server-side robustas, escaláveis e seguras com alta performance.",
+          serv2_title: "Integração com IA", serv2_desc: "Implementação de IA Generativa e LLMs para automatizar fluxos de trabalho e gerar insights.",
+          serv3_title: "Engenharia de Dados", serv3_desc: "Estruturação e manutenção de bancos de dados em larga escala e pipelines de observabilidade em tempo real.",
+          
+          skills_title: "Habilidades", contact_title: "ENTRE EM CONTATO", contact_subtitle: "// Escolha o melhor canal:",
+          location: "Localização", country: "São Paulo, Brasil", btn_email: "Enviar Mensagem", footer_rights: "© 2026. Todos os direitos reservados.",
+          btn_view_live: "Ver Projeto", filter_all: "Todos", filter_ai: "IA",
+          skill_back: "BACKEND", skill_system: "DESIGN DE SISTEMAS", skill_ai: "INTEGRAÇÃO IA",
+          scroll_text: "Construindo e modernizando o backend invisível que sustenta experiências digitais.", tech_title:"TECNOLOGIAS", 
+          tech_subtitle: "// Tecnologias utilizadas",
+          hero_phrases: ["Construindo Experiências Digitais.", "Modernização de Sistemas Legados.", "Criando Soluções Com IA.", "Desenvolvendo Apps Full-Stack.", "Projetando Sistemas em Cloud."],
+          
+          observability: "Observabilidade", documentation: "Documentação", methodologies: "Metodologias",
+          tools: "Ferramentas", container: "Contêiner", protocol: "Protocolo",
+        },
+        es: {
+          nav_work: "Trabajos", nav_about: "Sobre mí", nav_contact: "Contacto", nav_skills: "Habilidades", nav_quali: "Calificación", nav_tec: "Tecnologías", nav_exp: "Experiencia", nav_serv: "Servicios",
+          hero_role: "DESARROLLADOR DE SOFTWARE", hero_role2: "❤ FULLSTACK ❤ BACKEND ❤ DESIGN UX ❤ IA ❤ OBSERVABILIDAD ❤ DOCUMENTACIÓN ❤ METODOLOGÍAS ❤ FRONTEND ❤ QA",
+          work_title: "VER TRABAJOS", about_title: "SOBRE MÍ", skills_subtitle: "// Mi arsenal técnico",  about_subtitle: "// Mi viaje", wok_subtitle: "// Colección de proyectos recientes", exp_subtitle: "// Trayectoria profesional", serv_subtitle: "// Lo que puedo hacer por ti",
+          experience1: "+1 AÑO DE\nEXPERIENCIA\nEN DATOS", experience2: "+2 AÑOS DE\nEXPERIENCIA\nEN IA", experience3: "+5 AÑOS DE\nEXPERIENCIA\nEN CÓDIGO",
+          about_text1: "¡Hola, soy Rogério!\n\nA mis 26 años, y con una trayectoria que comenzó en 2018, inicio una nueva etapa profesional centrada en mi retorno activo al sector tecnológico. Soy desarrollador de software con sólida experiencia en el ámbito financiero y bancario, especializado en la modernización de sistemas heredados (*legacy*) monolíticos y sin documentación, transformándolos en arquitecturas escalables orientadas a la reducción de costes de infraestructura, soporte técnico y eficiencia operativa. Gracias a la adopción del desarrollo asistido por IA, he logrado reducir el tiempo y los costes de entrega de proyectos hasta tres veces.\n\nCon más de 5 años de experiencia en desarrollo, más de 2 años en IA generativa y más de 1 año en ingeniería de datos, gestiono sistemas de misión crítica en entornos que manejan volúmenes de facturación de millones o miles de millones de dólares, garantizando una alta disponibilidad, el cumplimiento normativo y el respeto a los requisitos obligatorios.\n\nDoy gran valor a la comprensión de los procesos para fomentar una mejor colaboración con los equipos y crear experiencias de usuario excelentes que impulsen los resultados y los ingresos.",
+          process_title: "Mi Proceso", step1_title: "Investigación", step1_desc: "Entendiendo necesidades del usuario",
+          step2_title: "Estrategia", step2_desc: "Desarrollando conceptos",
+          step3_title: "Lógica y desarrollo", step3_desc: "Construyendo la lógica del sistema",
+          step4_title: "Pruebas y validación", step4_desc: "Ajuste y refinamiento",
+          
+          exp1_title: "Desarrollador Backend Senior", exp1_meta: "Sector Bancario | 2022 - Actual", exp1_desc: "Lideré la modernización de sistemas monolíticos a microservicios. Reduje costos de infraestructura en un 40% y mejoré la estabilidad para millones de transacciones diarias.",
+          exp2_title: "Desarrollador Fullstack", exp2_meta: "Tech Solutions Inc. | 2019 - 2022", exp2_desc: "Desarrollé aplicaciones con React y Node.js. Integré pasarelas de pago y construí APIs utilizadas por más de 50 mil usuarios al mes.",
+          exp3_title: "Desarrollador Junior", exp3_meta: "Agencia Creativa | 2018 - 2019", exp3_desc: "Asistí en el desarrollo de sitios responsivos. Gané experiencia en bases de datos, control de versiones y metodologías ágiles.",
+
+          serv1_title: "Arquitectura Backend", serv1_desc: "Diseño y desarrollo de aplicaciones del lado del servidor robustas y escalables con alto rendimiento.",
+          serv2_title: "Integración de IA", serv2_desc: "Implementación de IA generativa y LLM para automatizar flujos de trabajo y generar insights.",
+          serv3_title: "Ingeniería de Datos", serv3_desc: "Estructuración de bases de datos a gran escala y observabilidad para monitoreo en tiempo real.",
+          
+          skills_title: "Habilidades", contact_title: "CONTÁCTENOS", contact_subtitle: "// Elige el mejor canal:",
+          location: "Ubicación", country: "São Paulo, Brasil",  btn_email: "Enviar Mensaje", footer_rights: "© 2026. Todos los derechos reservados.",
+          btn_view_live: "Ver Proyecto", filter_all: "Todos", filter_ai: "IA", 
+          skill_back: "BACKEND", skill_system: "DISEÑO DE SISTEMAS", skill_ai: "INTEGRACIÓN IA",
+          scroll_text: "Construyendo y modernizando el backend invisible que sustenta las experiencias digitales.", tech_title:"TECNOLOGÍAS", 
+          tech_subtitle: "// Tecnologías utilizadas",
+          hero_phrases: ["Creación de experiencias digitales.", "Modernización de sistemas heredados.", "Creación de soluciones con IA.", "Desarrollo de aplicaciones full-stack.", "Diseño de sistemas en la nube."],
+
+          observability: "Observabilidad", documentation: "Documentación", methodologies: "Metodologías",
+          tools: "Herramientas", container: "Contenedor", protocol: "Protocolo",
+        }
+      };
+
+      const projects = [
+        {
+          category: "Frontend",
+          image: "https://placehold.co/800x600/000/fff?text=EM+BREVE&font=Poppins",
+          en: { title: "Store Website", short: "Store catalog for WhatsApp.", long: "<p>A responsive web catalog designed to streamline the sales process.\n\nIt features an intuitive interface where users can browse products, manage a cart, and send orders directly via WhatsApp.</p>" },
+          pt: { title: "WebSite de Loja", short: "Catálogo da loja para WhatsApp.", long: "<p>Um catálogo web responsivo projetado para agilizar o processo de vendas.\n\nPossui uma interface intuitiva onde os usuários podem navegar pelos produtos, gerenciar o carrinho e enviar pedidos diretamente via WhatsApp.</p>" },
+          es: { title: "Sitio web de la tienda", short: "Catálogo de la tienda de WhatsApp.", long: "<p>Un catálogo web responsivo diseñado para agilizar el proceso de ventas.\n\nCuenta con una interfaz intuitiva donde los usuarios pueden navegar por productos, gestionar el carrito y enviar pedidos directamente a través de la WhatsApp.</p>" }
+        },
+        {
+          category: "Backend",
+          image: "https://placehold.co/800x600/000/fff?text=EM+BREVE&font=Poppins",
+          en: { title: "API in Golang", short: "An API in Go and a database.", long: "<p>High-performance REST API built with Golang.\n\nFocused on scalability and concurrency, this project handles efficient data processing and secure authentication, interacting optimally with a relational database to ensure low latency and data integrity.</p>" },
+          pt: { title: "API em Golang", short: "Uma API em Go e banco de dados.", long: "<p>API RESTde alta performance construída com Golang.\n\nFocada em escalabilidade e concorrência, este projeto lida com processamento eficiente de dados e autenticação segura, interagindo de forma otimizada com banco de dados relacional para garantir baixa latência.</p>" },
+          es: { title: "API en Golang", short: "Una API en Go y una base de datos.", long: "<p>API REST de alto rendimiento construida con Golang.\n\nEnfocada en la escalabilidad y la concurrencia, este proyecto maneja el procesamiento eficiente de datos y la autenticación segura, interactuando de manera óptima con una base de datos relacional.</p>" }
+        },
+        {
+          category: "Observability",
+          image: "https://placehold.co/800x600/000/fff?text=EM+BREVE&font=Poppins",
+          en: { title: "Prometheus & Grafana", short: "Monitoring using Prometheus and Grafana.", long: "<p>Implementation of a complete observability stack for real-time monitoring.\n\nCustomized dashboards in Grafana with metrics collected by Prometheus, enabling proactive problem resolution and performance tuning.</p>" },
+          pt: { title: "Prometheus & Grafana", short: "Monitoramento usando Prometheus e Grafana.", long: "<p>Implementação de uma stack completa de observabilidade para monitorar em tempo real.\n\nDashboards personalizados no Grafana com métricas coletadas pelo Prometheus, permitindo resolução proativa de problemas e ajuste de performance.</p>" },
+          es: { title: "Prometheus y Grafana", short: "Monitoreo usando Prometheus y Grafana.", long: "<p>Implementación de una plataforma completa de observabilidad para la monitorización en tiempo real.\n\nPaneles de control personalizados en Grafana con métricas recopiladas por Prometheus, lo que permite la resolución proactiva de problemas y el ajuste del rendimiento.</p>" }
+        }
+      ];
+
+      const allTags = [
+        { text: 'Copilot', type: 'ai' }, { text: 'Gemini', type: 'ai' }, { text: 'ChatGPT', type: 'ai' },
+        { text: 'LLM', type: 'ai' }, { text: 'Claude', type: 'ai' }, { text: 'Deepseek', type: 'ai' },
+        { text: 'Pandas', type: 'ai' }, { text: 'Llama', type: 'ai' }, { text: 'OpenCode', type: 'ai' },
+        { text: 'LM Studio', type: 'ai' }, { text: 'Alpaca', type: 'ai' },
+        { text: 'Java 8', type: 'backend' }, { text: 'Java 11', type: 'backend' }, { text: 'Java 21', type: 'backend' },
+        { text: 'Python', type: 'backend' }, { text: 'GoLang', type: 'backend' }, { text: 'C#', type: 'backend' },
+        { text: 'C', type: 'backend' }, { text: 'VBA', type: 'backend' },
+        { text: 'HTML5', type: 'frontend' }, { text: 'CSS3', type: 'frontend' }, { text: 'Javascript', type: 'frontend' },
+        { text: 'Tailwind', type: 'frontend' }, { text: 'Bootstrap', type: 'frontend' }, { text: 'GSAP', type: 'frontend' },
+        { text: 'Android', type: 'mobile' }, { text: 'Kotlin', type: 'mobile' },
+        { text: 'Spring Boot', type: 'frameworks' }, { text: 'Quarkus', type: 'frameworks' }, { text: 'Django', type: 'frameworks' },
+        { text: 'Flask', type: 'frameworks' }, { text: 'FastAPI', type: 'frameworks' }, { text: 'Boto', type: 'frameworks' },
+        { text: 'Gin', type: 'frameworks' }, { text: 'Echo', type: 'frameworks' }, { text: 'Angular', type: 'frameworks' },
+        { text: 'Android SDK', type: 'frameworks' }, { text: 'Flutter', type: 'frameworks' }, { text: 'Hibernate', type: 'frameworks' },
+        { text: 'JPA', type: 'frameworks' }, { text: 'Prisma', type: 'frameworks' }, { text: 'AWS SDK', type: 'frameworks' },
+        { text: 'GCP SDK', type: 'frameworks' },
+        { text: 'SQL', type: 'data' }, { text: 'MySQL', type: 'data' }, { text: 'MongoDB', type: 'data' },
+        { text: 'Redis', type: 'data' }, { text: 'DynamoDB', type: 'data' }, { text: 'SQLite', type: 'data' },
+        { text: 'SQL Server', type: 'data' }, { text: 'Tableau', type: 'data' }, { text: 'Excel', type: 'data' },
+        { text: 'Access', type: 'data' },
+        { text: 'AWS', type: 'cloud' }, { text: 'GCP', type: 'cloud' }, { text: 'Docker', type: 'cloud' },
+        { text: 'Kubernetes', type: 'cloud' }, { text: 'CI/CD', type: 'cloud' }, { text: 'Terraform', type: 'cloud' },
+        { text: 'GitHub Actions', type: 'cloud' }, { text: 'Vercel', type: 'cloud' },
+        { text: 'JUnit', type: 'testing' }, { text: 'Mockito', type: 'testing' }, { text: 'WireMock', type: 'testing' },
+        { text: 'Selenium', type: 'testing' }, { text: 'Cucumber', type: 'testing' }, { text: 'LocalStack', type: 'testing' },
+        { text: 'Pytest', type: 'testing' },
+        { text: 'Prometheus', type: 'observability' }, { text: 'AppDynamics', type: 'observability' }, { text: 'Grafana', type: 'observability' },
+        { text: 'CloudWatch', type: 'observability' }, { text: 'Datadog', type: 'observability' }, { text: 'Splunk', type: 'observability' },
+        { text: 'GitHub Pages', type: 'documentation' }, { text: 'GitHub Readme', type: 'documentation' }, { text: 'Confluence', type: 'documentation' },
+        { text: 'Docusaurus', type: 'documentation' }, { text: 'Swagger.io', type: 'documentation' }, { text: 'Miro', type: 'documentation' },
+        { text: 'Draw.io', type: 'documentation' }, { text: 'Json collection', type: 'documentation' },
+        { text: 'Figma', type: 'design' }, { text: 'UX/UI', type: 'design' }, { text: 'Design System', type: 'design' },
+        { text: 'Photoshop', type: 'design' },
+        { text: 'Scrum', type: 'methodologies' }, { text: 'Kanban', type: 'methodologies' },
+        { text: 'Jenkins', type: 'tools' }, { text: 'VS Code', type: 'tools' }, { text: 'VSCodium ', type: 'tools' },
+        { text: 'Draw.io', type: 'tools' }, { text: 'DBeaver ', type: 'tools' }, { text: 'Insomnia', type: 'tools' }, { text: 'Bruno', type: 'tools' },
+        { text: 'Postman', type: 'tools' }, { text: 'Thunder Client', type: 'tools' }, { text: 'Insomnia', type: 'tools' },
+        { text: 'Intellij', type: 'tools' }, { text: 'Swagger.io', type: 'tools' }, { text: 'Cursor IDE', type: 'tools' },
+        { text: 'AWS Cli', type: 'tools' }, { text: 'Git Bash', type: 'tools' }, { text: 'Jira', type: 'tools' },
+        { text: 'Miro', type: 'tools' }, { text: 'Confluence', type: 'tools' },
+        { text: 'Docker', type: 'container' }, { text: 'Podman', type: 'container' },
+        { text: 'HTTP', type: 'protocol' }, { text: 'HTTPS', type: 'protocol' }, { text: 'TCP/IP', type: 'protocol' },
+        { text: 'WebSocket', type: 'protocol' }, { text: 'REST', type: 'protocol' }, { text: 'SOAP', type: 'protocol' },
+        { text: 'Webhooks', type: 'protocol' }, { text: 'ISO', type: 'protocol' }, { text: 'GraphQL', type: 'protocol' },
+      ];
+
+      let currentLang = 'en';
+
+      // ==========================================
+      // 2. MODAL UTILS
+      // ==========================================
+      function openModalUI(modalId, contentId) {
+        const m = document.getElementById(modalId);
+        const c = contentId ? document.getElementById(contentId) : null;
+        m.classList.remove('hidden'); document.body.classList.add('modal-open');
+        requestAnimationFrame(() => {
+          m.classList.remove('opacity-0');
+          if(c) { c.classList.remove('scale-95'); c.classList.add('scale-100'); }
+        });
+      }
+
+      function closeModalUI(modalId, contentId, callback) {
+        const m = document.getElementById(modalId);
+        const c = contentId ? document.getElementById(contentId) : null;
+        m.classList.add('opacity-0');
+        if(c) { c.classList.remove('scale-100'); c.classList.add('scale-95'); }
+        setTimeout(() => {
+          m.classList.add('hidden'); document.body.classList.remove('modal-open');
+          if(callback) callback();
+        }, 300);
+      }
+
+      // Utils globais para cor principal dinâmica
+      function getAccentColor() {
+        return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || "#39ff14";
+      }
+
+      // ==========================================
+      // 3. ANIMATIONS & TYPING (GSAP)
+      // ==========================================
+      let typeWriterTimeout, typePhraseIndex = 0, typeCharIndex = 0, isTypeDeleting = false;
+
+      function initAnimations(lang) {
+        gsap.registerPlugin(ScrollTrigger);
+        
+        gsap.utils.toArray('.gs-reveal-up').forEach(element => {
+            gsap.to(element, { scrollTrigger: { trigger: element, start: "top 85%" }, autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" });
+        });
+
+        const tl = gsap.timeline();
+        tl.to(".profile-image", { autoAlpha: 1, duration: 1.5, ease: "power2.out" })
+          .from(".gs-hero-text h1", { y: 50, autoAlpha: 0, duration: 1, ease: "power3.out" }, "-=1");
+
+        ScrollTrigger.batch(".work-card", {
+          start: "top 85%", onEnter: batch => gsap.to(batch, { autoAlpha: 1, y: 0, stagger: 0.2, duration: 0.8, ease: "power3.out" })
+        });
+
+        gsap.utils.toArray('.skill-bar').forEach(bar => {
+          let targetWidth = bar.getAttribute('data-width');  
+          if (!targetWidth.includes('%')) targetWidth += '%'; 
+          gsap.fromTo(bar, { width: "0%" }, { width: targetWidth, duration: 1.5, ease: "power2.out", scrollTrigger: { trigger: "#skills", start: "top 85%", toggleActions: "play none none reverse"} });
+        });
+
+        initScrollTypewriter(lang);
+        initHeroTypewriter(lang);
+        initCubeLogic();
+      }
+
+      function initScrollTypewriter(lang) {
+        const textElement = document.getElementById('scroll-typewriter-text'); 
+        if(!textElement) return;
+
+        const textContent = translations[lang].scroll_text; 
+        textElement.innerHTML = ''; 
+        const chars = textContent.split('');
+
+        chars.forEach(char => { 
+          const span = document.createElement('span'); 
+          span.textContent = char; 
+          span.style.opacity = '0.2'; 
+          span.style.transition = 'color 0.2s, opacity 0.2s'; 
+          textElement.appendChild(span); 
+        });
+
+        const spans = textElement.querySelectorAll('span');
+        gsap.to(spans, { 
+          scrollTrigger: { trigger: textElement, start: "top 80%", end: "bottom 40%", scrub: 1 }, 
+          opacity: 1, color: getAccentColor(), stagger: 0.1, ease: "none" 
+        });
+      }
+
+      function initHeroTypewriter(lang) {
+        const h1 = document.querySelector(".gs-hero-text h2");
+        if(!h1) return;
+        h1.style.minHeight = "1.8em"; 
+        if(typeWriterTimeout) clearTimeout(typeWriterTimeout);
+        const phrases = translations[lang].hero_phrases;
+        typePhraseIndex = 0; typeCharIndex = 0; isTypeDeleting = false;
+        typeLoop(h1, phrases, lang);
+      }
+
+      function typeLoop(element, phrases, lang) {
+        if (!phrases || phrases.length === 0) return;
+        const currentPhrase = phrases[typePhraseIndex % phrases.length];
+        if (isTypeDeleting) { element.innerHTML = currentPhrase.substring(0, typeCharIndex - 1); typeCharIndex--; } else { element.innerHTML = currentPhrase.substring(0, typeCharIndex + 1); typeCharIndex++; }
+        if(!isTypeDeleting && typeCharIndex < currentPhrase.length) { element.style.borderRight = "none"; }
+        let typeSpeed = isTypeDeleting ? 50 : 100;
+        if (!isTypeDeleting && typeCharIndex === currentPhrase.length) { typeSpeed = 2000; isTypeDeleting = true; } else if (isTypeDeleting && typeCharIndex === 0) { isTypeDeleting = false; typePhraseIndex = (typePhraseIndex + 1) % phrases.length; typeSpeed = 500; }
+        typeWriterTimeout = setTimeout(() => typeLoop(element, phrases, lang), typeSpeed);
+      }
+
+      function initCubeLogic() {
+        const btns = document.querySelectorAll(".btn-cube-nav");
+        const cube = document.getElementById("cube");
+        if(cube && btns.length > 0) {
+          btns.forEach(btn => {
+            btn.addEventListener("click", () => {
+              const side = btn.getAttribute("data-side"); cube.className = 'cube'; requestAnimationFrame(() => cube.classList.add(`show-${side}`));
+            });
+          });
+        }
+      }
+
+      // ==========================================
+      // 4. SKILLS SPHERE (CANVAS)
+      // ==========================================
+      let filteredTags = [...allTags];
+      let sphereCanvas, sphereCtx, sphereAnimId;
+
+      function initSphere() {
+        sphereCanvas = document.getElementById('sphereCanvas');
+        if(!sphereCanvas) return;
+        sphereCtx = sphereCanvas.getContext('2d');
+        resizeSphereCanvas();
+        let rotation = 0;
+
+        function draw() {
+          if (!sphereCanvas) return;
+          sphereCtx.clearRect(0, 0, sphereCanvas.width, sphereCanvas.height);
+          const style = getComputedStyle(document.documentElement);
+          const textColor = style.getPropertyValue('--text').trim();
+          const accentColor = getAccentColor();
+          const cx = sphereCanvas.width / 2; const cy = sphereCanvas.height / 2; const radius = Math.min(cx, cy) - 20;
+
+          filteredTags.forEach((tag, i) => {
+            const theta = Math.acos(-1 + (2 * i + 1) / filteredTags.length);
+            const phi = Math.sqrt(filteredTags.length * Math.PI) * theta + rotation;
+            const x = radius * Math.sin(theta) * Math.cos(phi);
+            const y = radius * Math.sin(theta) * Math.sin(phi);
+            const z = radius * Math.cos(theta);
+            const scale = (z + radius * 2) / (radius * 2);
+
+            sphereCtx.save(); sphereCtx.translate(cx + x, cy + y); sphereCtx.font = `${Math.max(10, 14 * scale)}px Inter`;
+            sphereCtx.fillStyle = scale > 1.2 ? accentColor : textColor; sphereCtx.globalAlpha = Math.max(0, scale - 0.2); sphereCtx.fillText(tag.text, 0, 0); sphereCtx.restore();
+          });
+          rotation += 0.005; sphereAnimId = requestAnimationFrame(draw);
+        }
+
+        if(sphereAnimId) cancelAnimationFrame(sphereAnimId);
+        draw();
+
+        const filters = document.querySelectorAll('.sphere-filter');
+        filters.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            filters.forEach(b => { b.classList.remove('active'); b.removeAttribute('style'); });
+            e.target.classList.add('active');
+            const styleColor = getAccentColor();
+            e.target.style.backgroundColor = styleColor; e.target.style.borderColor = styleColor;
+            const type = e.target.getAttribute('data-filter');
+            filteredTags = type === 'all' ? [...allTags] : allTags.filter(t => t.type === type);
+          });
+        });
+        window.addEventListener('resize', resizeSphereCanvas, { passive: true });
+      }
+
+      function resizeSphereCanvas() {
+        if(sphereCanvas) {
+          sphereCanvas.width = sphereCanvas.parentElement.clientWidth;
+          sphereCanvas.height = sphereCanvas.parentElement.clientHeight;
+        }
+      }
+
+      // ==========================================
+      // 5. TERMINAL 1 (SIMULATOR)
+      // ==========================================
+      let termIndex = 0, termCurrentText = "", termIsDeleting = false, termCurrentMenu = "main", terminalRunning = false, typeDeleteTimeout;
+
+      const termMenus = {
+        main: `ACCESS_LEVEL: ROOT<br>Select operation:<br><span data-action="1">[1] TR_API_ADVANTAGES</span><br><span data-action="2">[2] COST_STRUCTURE</span><br><span data-action="3">[3] BYPASS_TARGETS</span><br><span data-action="4">[4] COMMS_CHANNEL</span>`,
+        1: `TR_API_ADVANTAGES<br><br>Analysis of system superiority:<br>- <strong>RAW_REQUESTS Only</strong><br>- <strong>OS_AGNOSTIC</strong><br>- <strong>PERPETUAL_UPTIME</strong><br><br><span data-action="B">[B] RETURN_TO_ROOT</span>`,
+        2: `COST_STRUCTURE<br><br>Optimized data exchange rates. Full access to the entire bypass suite. No hidden encryption fees.<br><br><span data-action="B">[B] RETURN_TO_ROOT</span>`,
+        3: `BYPASS_TARGETS<br><br>Successfully neutralized protocols:<br>- Incapsula Layer<br>- Perimeter X Mobile Integrity<br>... scavenging for more targets.<br><br><span data-action="B">[B] RETURN_TO_ROOT</span>`,
+        4: `COMMS_CHANNEL<br><br>Establish a direct link. Awaiting signal from your terminal.<br><br><span data-action="B">[B] RETURN_TO_ROOT</span>`
+      };
+
+      function initTerminal1() {
+        document.getElementById('open-terminal-btn')?.addEventListener('click', () => {
+          openModalUI('terminal-modal', 'terminal-content-box');
+          document.querySelector(".tr-output").innerHTML = ""; 
+          document.querySelector(".tr-typing").innerHTML = ""; 
+          document.getElementById("tr-input-line").style.display = "none";
+          termIndex = 0; termCurrentText = ""; termIsDeleting = false; termCurrentMenu = "main"; terminalRunning = true; 
+          bootAnimation();
+        });
+
+        // Delegação de fechamento usando document para previnir conflitos
+        document.addEventListener('click', (e) => {
+          if(e.target.closest('#terminal-modal .close-terminal') || e.target.matches('#terminal-modal .terminal-overlay')) {
+            closeModalUI('terminal-modal', 'terminal-content-box', () => { terminalRunning = false; });
+          }
+        });
+
+        document.querySelector('.tr-typing').addEventListener('click', (e) => {
+          if(e.target.matches('span[data-action]')) handleMenuClick(e.target.getAttribute('data-action'));
+        });
+      }
+
+      function bootAnimation() {
+        if(!terminalRunning) return;
+        const output = document.querySelector(".tr-output");
+        const messages = ["Executing: sudo apt update", "Hit:1 primary InRelease", "Fetched 27 kB in 9s (18 kB/s)", "Reading package lists...", "Building dependency tree...", "All packages are up to date."];
+        let i = 0;
+        function step() {
+          if(!terminalRunning) return;
+          if (i < messages.length) { output.innerHTML += messages[i] + "<br>"; i++; setTimeout(step, 150); } else {
+            output.innerHTML = "<br>"; document.getElementById("tr-input-line").style.display = "block"; termCurrentText = termMenus.main; typeDeleteAnimation();
+          }
+        }
+        step();
+      }
+
+      function typeDeleteAnimation(callback) {
+        if(!terminalRunning) return;
+        const typingElement = document.querySelector(".tr-typing");
+        if(typeDeleteTimeout) clearTimeout(typeDeleteTimeout);
+
+        if (termIsDeleting && typingElement.innerHTML !== "") {
+          typingElement.innerHTML = ""; termIsDeleting = false; termIndex = 0; if (callback) callback();
+        } else if (!termIsDeleting && termIndex < termCurrentText.length) {
+          if (termCurrentText.charAt(termIndex) === "<") {
+            if (termCurrentText.substr(termIndex, 4) === "<br>") { typingElement.appendChild(document.createElement("br")); termIndex += 4; } else {
+              const closingTagIndex = termCurrentText.indexOf(">", termIndex);
+              const tagName = termCurrentText.substring(termIndex + 1, closingTagIndex).split(" ")[0];
+              const endTagStr = `</${tagName}>`;
+              const endTagIndex = termCurrentText.indexOf(endTagStr, termIndex) + endTagStr.length;
+              const tempDiv = document.createElement("div"); tempDiv.innerHTML = termCurrentText.substring(termIndex, endTagIndex);
+              typingElement.appendChild(tempDiv.firstChild); termIndex = endTagIndex;
+            }
+          } else {
+            typingElement.innerHTML += termCurrentText.charAt(termIndex); termIndex++;
+          }
+          typeDeleteTimeout = setTimeout(() => typeDeleteAnimation(callback), 5);
+        }
+      }
+
+      function handleMenuClick(key) {
+        if(!terminalRunning) return;
+        if (key === "b") key = "B";
+        if ((key in termMenus && termCurrentMenu !== key) || (key === "B" && termCurrentMenu !== "main")) {
+          termIsDeleting = true; let nextMenu = (key === "B") ? "main" : key;
+          typeDeleteAnimation(() => { termCurrentMenu = nextMenu; termCurrentText = termMenus[nextMenu]; termIndex = 0; typeDeleteAnimation(); });
+        }
+      }
+
+      // ==========================================
+      // 6. TERMINAL 2 (ADVANCED VISUALS)
+      // ==========================================
+      const canvas3d = document.getElementById("canvas3d"); const ctx3d = canvas3d.getContext("2d");
+      const canvasMatrix = document.getElementById("canvasMatrix"); const ctxM = canvasMatrix.getContext("2d");
+      const canvasBars = document.getElementById("canvasBars"); const ctxB = canvasBars.getContext("2d");
+      const consoleEl = document.getElementById("liveConsole");
+
+      let squares = []; let drops = []; const fontSize = 14; let terminal2Running = false; let logIntervalId;
+
+      class Square {
+          constructor(z) { this.z = z; this.angle = 0; }
+          update() { this.z -= 5; this.angle += 0.01; if (this.z <= 0) this.z = 1000; }
+          draw() {
+              const size = (1000 / this.z) * 100; const x = canvas3d.width / 2; const y = canvas3d.height / 2;
+              ctx3d.save(); ctx3d.translate(x, y); ctx3d.rotate(this.angle);
+              ctx3d.strokeStyle = getAccentColor(); ctx3d.lineWidth = Math.max(0.5, 1000 / this.z);
+              ctx3d.strokeRect(-size / 2, -size / 2, size, size); ctx3d.restore();
+          }
+      }
+
+      function initMatrix() {
+          if(canvasMatrix.width === 0) return;
+          const columns = canvasMatrix.width / fontSize; drops = [];
+          for (let i = 0; i < columns; i++) drops[i] = 1;
+      }
+
+      function drawMatrix() {
+          ctxM.fillStyle = "rgba(0, 0, 0, 0.05)"; ctxM.fillRect(0, 0, canvasMatrix.width, canvasMatrix.height);
+          ctxM.fillStyle = getAccentColor(); ctxM.font = fontSize + "px monospace";
+          for (let i = 0; i < drops.length; i++) {
+              const text = String.fromCharCode(Math.random() * 128);
+              ctxM.fillText(text, i * fontSize, drops[i] * fontSize);
+              if (drops[i] * fontSize > canvasMatrix.height && Math.random() > 0.975) drops[i] = 0;
+              drops[i]++;
+          }
+      }
+
+      function drawBars() {
+          ctxB.clearRect(0, 0, canvasBars.width, canvasBars.height);
+          ctxB.fillStyle = getAccentColor(); ctxB.strokeStyle = getAccentColor();
+          for (let i = 0; i < 20; i++) { const h = Math.random() * canvasBars.height * 0.7; ctxB.fillRect(20 + i * 15, canvasBars.height - h - 20, 8, h); }
+          ctxB.beginPath(); ctxB.moveTo(0, 50);
+          for (let x = 0; x < canvasBars.width; x++) { ctxB.lineTo(x, 50 + Math.sin(x * 0.05 + Date.now() * 0.01) * 20); }
+          ctxB.stroke();
+      }
+
+      function addLog() {
+          if(!terminal2Running) return;
+          const logs = [ "DECRYPTING SHA-256...", "BYPASSING FIREWALL...", "ACCESS GRANTED", "CONNECTING TO SQL_DB...", "INJECTING PAYLOAD...", "REMOTE_HOST: 127.0.0.1", "PACKET_LOSS: 0%", "WIPING LOGS...", "TRACING SIGNAL..." ];
+          const line = document.createElement("div");
+          line.textContent = `[${new Date().toLocaleTimeString()}] ` + logs[Math.floor(Math.random() * logs.length)];
+          if (Math.random() > 0.8) line.style.color = "white";
+          consoleEl.appendChild(line);
+          if (consoleEl.childNodes.length > 25) consoleEl.removeChild(consoleEl.firstChild);
+          consoleEl.scrollTop = consoleEl.scrollHeight;
+      }
+
+      function resizeTerminal2() {
+          if (!canvas3d.parentElement || canvas3d.parentElement.offsetWidth === 0) return;
+          canvas3d.width = canvas3d.parentElement.offsetWidth; canvas3d.height = canvas3d.parentElement.offsetHeight;
+          canvasBars.width = canvasBars.parentElement.offsetWidth; canvasBars.height = canvasBars.parentElement.offsetHeight;
+          canvasMatrix.width = canvasMatrix.parentElement.offsetWidth; canvasMatrix.height = canvasMatrix.parentElement.offsetHeight;
+          initMatrix();
+      }
+
+      function animateTerminal2() {
+          if(!terminal2Running) return;
+          ctx3d.fillStyle = "black"; ctx3d.fillRect(0, 0, canvas3d.width, canvas3d.height);
+          squares.forEach((s) => { s.update(); s.draw(); });
+          drawBars(); drawMatrix();
+          requestAnimationFrame(animateTerminal2);
+      }
+
+      function initTerminal2() {
+        for (let i = 0; i < 15; i++) squares.push(new Square(i * 100));
+
+        document.getElementById('open-terminal-btn2')?.addEventListener('click', () => {
+          openModalUI('terminal2-modal', 'terminal2-content-box');
+          
+          setTimeout(() => {
+             resizeTerminal2();
+             if(!terminal2Running) {
+               terminal2Running = true;
+               logIntervalId = setInterval(addLog, 400);
+               animateTerminal2();
+             }
+          }, 50); 
+        });
+
+        document.addEventListener('click', (e) => {
+          if(e.target.closest('#terminal2-modal .close-terminal') || e.target.matches('#terminal2-modal .terminal-overlay')) {
+            closeModalUI('terminal2-modal', 'terminal2-content-box', () => { 
+                terminal2Running = false; 
+                clearInterval(logIntervalId);
+            });
+          }
+        });
+
+        window.addEventListener("resize", () => {
+          if(terminal2Running) resizeTerminal2();
+        });
+      }
+
+      // ==========================================
+      // 7. GENERAL UI & LOGIC
+      // ==========================================
+      function initUI() {
+        document.getElementById("language-select")?.addEventListener("change", (e) => updateLanguage(e.target.value));
+        
+        document.querySelectorAll(".accent-btn").forEach(btn => btn.addEventListener("click", () => {
+          const hex = btn.getAttribute("data-color");
+          document.documentElement.style.setProperty('--accent', hex);
+          document.querySelectorAll('.sphere-filter.active').forEach(b => { b.style.backgroundColor = hex; b.style.borderColor = hex; });
+          initScrollTypewriter(currentLang);
+        }));
+
+        const menuBtn = document.querySelector(".mobile-menu-toggle"), menuOverlay = document.querySelector(".mobile-menu");
+        if(menuBtn && menuOverlay) {
+          menuBtn.addEventListener("click", () => {
+             menuOverlay.classList.toggle("translate-x-full");
+             const spans = menuBtn.children;
+             if(!menuOverlay.classList.contains("translate-x-full")) {
+                spans[0].style.transform = "translateY(9px) rotate(45deg)"; spans[1].style.opacity = "0"; spans[2].style.transform = "translateY(-9px) rotate(-45deg)";
+             } else {
+                spans[0].style.transform = "none"; spans[1].style.opacity = "1"; spans[2].style.transform = "none";
+             }
+          });
+          document.querySelectorAll(".mobile-link").forEach(l => l.addEventListener("click", () => { menuOverlay.classList.add("translate-x-full"); const spans = menuBtn.children; spans[0].style.transform="none"; spans[1].style.opacity="1"; spans[2].style.transform="none"; }));
+        }
+
+        document.getElementById("scroll-to-top")?.addEventListener("click", () => window.scrollTo({top: 0, behavior: 'smooth'}));
+
+        const mainHeader = document.getElementById("main-header"), heroSection = document.querySelector(".gs-hero-section");
+        window.addEventListener("scroll", () => { 
+          if (heroSection && mainHeader) {
+            if (window.scrollY > heroSection.offsetHeight * 0.8) { mainHeader.classList.remove("-translate-y-full", "opacity-0", "pointer-events-none"); } 
+            else { mainHeader.classList.add("-translate-y-full", "opacity-0", "pointer-events-none"); }
+          }
+        }, { passive: true });
+
+        document.querySelectorAll('.work-card').forEach(card => card.addEventListener('click', () => {
+            const idx = card.getAttribute('data-project-index');
+            const p = projects[idx], data = p[currentLang];
+            document.getElementById('modal-title').textContent = data.title; 
+            document.getElementById('modal-tag').textContent = p.category; 
+            document.getElementById('modal-image').src = p.image; 
+            document.getElementById('modal-desc').innerHTML = data.long;
+            openModalUI('project-modal', 'modal-content');
+        }));
+        
+        document.querySelectorAll('.close-modal, .modal-overlay').forEach(btn => btn.addEventListener('click', () => {
+            closeModalUI('project-modal', 'modal-content');
+        }));
+      }
+
+      function updateLanguage(lang) {
+        currentLang = lang;
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+          const key = el.getAttribute("data-i18n");
+          if(translations[lang][key]) el.textContent = translations[lang][key];
+        });
+        initScrollTypewriter(lang); initHeroTypewriter(lang);
+        projects.forEach((proj, index) => {
+          if (document.getElementById(`work-title-${index}`)) document.getElementById(`work-title-${index}`).textContent = proj[lang].title;
+          if (document.getElementById(`work-desc-${index}`)) document.getElementById(`work-desc-${index}`).textContent = proj[lang].short;
+        });
+      }
+
+      // ==========================================
+      // 8. MUSIC PLAYER
+      // ==========================================
+      function initMusicPlayer() {
+        const toggleBtn = document.getElementById('music-toggle'); let isPlaying = false;
+        const pauseIcon = `<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+        const playIcon = `<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+
+        const videoConfig = {
+          id: 'rkNUijRK3OQ',
+          start: 40,
+          end: 116
+        };
+
+        window.onYouTubeIframeAPIReady = () => {
+          window.player = new YT.Player('youtube-audio-player', {
+            height: '100%', width: '100%', videoId: videoConfig.id,
+            playerVars: { 'autoplay': 1, 'mute': 0, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'showinfo': 0 },
+            events: {
+              'onReady': (e) => { e.target.seekTo(videoConfig.start); e.target.setVolume(videoConfig.end); },
+              'onStateChange': (e) => {
+                if (e.data === YT.PlayerState.PLAYING) {
+                  isPlaying = true; toggleBtn.innerHTML = pauseIcon; toggleBtn.classList.add("text-accent");
+                } else {
+                  isPlaying = false; toggleBtn.innerHTML = playIcon; toggleBtn.classList.remove("text-accent");
+                }
+              }
+            }
+          });
+        };
+
+        toggleBtn.addEventListener('click', () => { if(window.player) isPlaying ? window.player.pauseVideo() : window.player.playVideo(); });
+        if (!window.YT) { const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag); }
+      }
+
+      // ==========================================
+      // 9. BACKGROUND CANVAS
+      // ==========================================
+      const { random } = Math;
+      const rand = n => n * random();
+      const fadeInOut = (t, m) => Math.abs((t + 0.5 * m) % m - 0.5 * m) / (0.5 * m);
+      
+      let container, canvas, ctx, center, tick, rayProps;
+      const rayCount = 100, rayPropCount = 8, rayPropsLength = rayCount * rayPropCount;
+      
+      function setupRays() {
+        container = document.getElementById('canvas-container');
+        canvas = { a: document.createElement('canvas'), b: document.createElement('canvas') };
+        canvas.b.style = `position: absolute; top: 0; left: 0; width: 100%; height: 100%;`;
+        container.appendChild(canvas.b);
+        ctx = { a: canvas.a.getContext('2d'), b: canvas.b.getContext('2d') };
+        center = [];
+        
+        resizeRays();
+        tick = 0; rayProps = new Float32Array(rayPropsLength);
+        for (let i = 0; i < rayPropsLength; i += rayPropCount) initRay(i);
+        drawRaysLoop();
+      }
+
+      function initRay(i) {
+        let length = 200 + rand(200);
+        let x = rand(canvas.a.width);
+        let y1 = center[1] + 100; let y2 = center[1] + 100 - length;
+        let life = 0, ttl = 50 + rand(100), width = 5 + rand(10), speed = 0.05 + rand(0.1) * (Math.round(rand(1)) ? 1 : -1), hue = 120 + rand(60);
+        rayProps.set([x, y1, y2, life, ttl, width, speed, hue], i);
+      }
+
+      function drawRaysLoop() {
+        tick++;
+        ctx.a.clearRect(0, 0, canvas.a.width, canvas.a.height);
+        ctx.b.fillStyle = 'hsla(220,60%,3%,1)';
+        ctx.b.fillRect(0, 0, canvas.b.width, canvas.a.height);
+        
+        for (let i = 0; i < rayPropsLength; i += rayPropCount) {
+          let x = rayProps[i], y1 = rayProps[i+1], y2 = rayProps[i+2], life = rayProps[i+3], ttl = rayProps[i+4], width = rayProps[i+5], speed = rayProps[i+6], hue = rayProps[i+7];
+          let gradient = ctx.a.createLinearGradient(x, y1, x, y2);
+          gradient.addColorStop(0, `hsla(${hue},100%,65%,0)`);
+          gradient.addColorStop(0.5, `hsla(${hue},100%,65%,${fadeInOut(life, ttl)})`);
+          gradient.addColorStop(1, `hsla(${hue},100%,65%,0)`);
+
+          ctx.a.save(); ctx.a.beginPath(); ctx.a.strokeStyle = gradient; ctx.a.lineWidth = width; ctx.a.moveTo(x, y1); ctx.a.lineTo(x, y2); ctx.a.stroke(); ctx.a.closePath(); ctx.a.restore();
+          
+          x += speed; life++;
+          rayProps[i] = x; rayProps[i+3] = life;
+          (x < 0 || x > canvas.a.width || life > ttl) && initRay(i);
+        }
+
+        ctx.b.save(); ctx.b.filter = 'blur(12px)'; ctx.a.globalCompositeOperation = 'lighter'; ctx.b.drawImage(canvas.a, 0, 0); ctx.b.restore();
+        window.requestAnimationFrame(drawRaysLoop);
+      }
+
+      function resizeRays() {
+        canvas.a.width = window.innerWidth; canvas.a.height = window.innerHeight;
+        canvas.b.width = window.innerWidth; canvas.b.height = window.innerHeight;
+        center[0] = 0.5 * canvas.a.width; center[1] = 0.5 * canvas.a.height;
+      }
+
+      // ==========================================
+      // START ALL
+      // ==========================================
+      document.addEventListener("DOMContentLoaded", () => { 
+        initUI(); initSphere(); initTerminal1(); initTerminal2(); initMusicPlayer(); setupRays(); initAnimations(currentLang);
+        window.addEventListener('resize', resizeRays, { passive: true });
+      });
+    </script>
+</body>
+</html>
